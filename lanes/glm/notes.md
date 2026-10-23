@@ -161,3 +161,33 @@ Authoritative state. Commit per finding. Probes log: lanes/glm/probes.log
   software bump elsewhere (ruby is identical though).
 - NEXT-PAIR: 19.4.2 vs 19.4.3 diff (this pair MUST contain a visible
   delta somewhere - pull both, full diff, focus lib/ + embedded).
+
+## R4: control-premise invalid (CONFIRMED, triple evidence)
+- sha256(libruby.so.3.3) IDENTICAL 19.5.0-ce.0 / 19.5.1-ce.0
+  (e91c20055c2a...) ; RUBY_VERSION=3.3.12 PATCHLEVEL=206 in BOTH
+  (re-verified 2026-10-23 via docker run). Full 57k-file rails diff =
+  trivial. => CVE-2026-110264 ENGINE FIX GENUINELY ABSENT from the
+  published gitlab-ce:19.5.1-ce.0 Docker image. Any Onigmo crasher
+  valid on 19.5.0 is natively valid on the "patched" box. Report to
+  orchestrator prominently. App-layer delta = none (only Oct-12
+  clause.rb timeout+check_compiled_size guard, present in BOTH -
+  orchestrator correction verified identical).
+- untrusted_regexp.rb:122 (with_fallback -> Regexp.new(pattern)):
+  LIVE fallback (disable_unsafe_regexp flag unregistered => enabled)
+  but ZERO callers in entire 19.5.0 tree (CE+EE+vendored gems;
+  2 grep hits = benign "fallback_reviewer" prose +
+  bulk_imports full_path_with_fallback). DEAD CODE, not the surface.
+  All UntrustedRegexp validation paths (graphql scalar, grape
+  validator, model validator) = RE2-only, never unwrap to native.
+- Native Regexp.new site triage (19.5.0): wiki_file_finder.rb:20
+  escape()d; robots_txt/parser.rb:67 escape()d; org-ruby #+TODO
+  escape()d (alt-count unbounded, parked); ci/tags delimiter const;
+  closing_issue_extractor = instance-admin config, boot-time constant;
+  banzai broadcast placeholders = site constants (admin, NOT
+  attacker); asset_proxy = config-only. => NO unescaped pre-auth
+  attacker-native-compile site found in gitlab-rails yet.
+- IMPLICATION: the pre-auth compile shape is ALWAYS
+  <fixed-wrapper>(<escaped attacker literals>)+N. CVE overflow must
+  live in dimensions that survive escaping: alternation count N,
+  total size, literal codepoints. Grammar v3 = fuzz the org-ruby
+  SHAPE (^(<kw>|...)\$, huge N, unicode) against embedded ruby.
