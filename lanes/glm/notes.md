@@ -233,3 +233,22 @@ CONSEQUENCES:
 => Older builds DO carry different omnibus ruby. The engine-fix
 absence in 19.5.1 stands; now fuzzing 18.11.12's 3.3.10 embedded
 ruby (oldest, pre-both-patch-rounds) for the CVE crasher.
+
+## R5 steps 2-4
+- Step 3 (surface sweep CLOSED): full-tree variable-arg Regexp.new
+  inventory triaged. NEW finds: js_regex_validator.rb:7 (NATIVE
+  Regexp.new(value, IGNORECASE)) -> only caller = application_setting
+  user_default_internal_regex (ADMIN-only form) - not attacker.
+  robots_txt/parser.rb -> parses GitLab's OWN static public/robots.txt
+  (not attacker content) - eliminated from surface inventory.
+  Remaining full inventory verdict: NO unescaped pre-auth attacker-
+  controlled native compile site in gitlab-rails 19.5.0. Surface
+  shapes remain escape()d wrappers (org-ruby #+TODO alt-count;
+  wiki finder; org-mode render). CVE must fire in escape-surviving
+  dimensions (R4).
+- Step 4: gitlab2shell.py crash --target embedded (docker exec
+  oracle, --image override). Verified live: 8-pattern corpus, all
+  clean on 19.5.0 omnibus ruby (expected; driver ready for crasher).
+- Step 2 running: 100k grammar-v2 JSONL vs 18.11.12 embedded ruby
+  (3.3.10) via embprobe.rb stdin batch. F1-family parse check on
+  3.3.10: same omnibus lineage behavior (no F1, same guards).

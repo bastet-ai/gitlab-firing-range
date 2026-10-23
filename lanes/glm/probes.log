@@ -246,3 +246,10 @@ Component                Installed Version                          Version GUID
 [23:06:02] GLRUBY alt-count n=100000 rc=0 out=ok
 [23:06:03] GLRUBY alt-count n=1000000 rc=0 out=ok
 [23:06:05] GLRUBY alt-count n=4000000 rc=0 out=ok
+"a|\\k<-2>" => RegexpError: invalid backref number/name: /a|\k<-2>/
+"(?<=\\g<n19>)|\\k<-5" => RegexpError: invalid group name <-5>: /(?<=\g<n19>)|\k<-5/
+"\\k<-2>" => RegexpError: invalid backref number/name: /\k<-2>/
+"(a)\\k<-1>" => ok
+"a{2147483647}" => RegexpError: too big number for repeat range: /a{214748364
+"(?:(?:(?:(?:(?:(?:(?:(?:(" => RegexpError: parse depth limit over: /(?:(?:(?:(?:(?:(?:(?
+"(a)(a)(a)(a)(a)(a)(a)(a)(" => RegexpError: too many capture groups are specified: /(a)(a

