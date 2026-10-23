@@ -2,3 +2,8 @@ __pycache__/
 *.pyc
 .env
 *.dump
+vm/debian-13.qcow2
+vm/overlay.qcow2
+vm/seed.iso
+vm/qemu.log
+vm/qemu.pid
