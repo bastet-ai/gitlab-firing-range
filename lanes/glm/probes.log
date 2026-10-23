@@ -258,3 +258,50 @@ EMBED rc=0 out_tail=i=0
 PROBE_DONE
 [01:37:46] EMBED rc=0 NEW-SHAPE-1 (?:|{4025604,}){8528894,24} out=i=0
 PROBE_DONE
+T=expand-2.2e9
+T=expand-4.4e9
+T=expand-alt
+T=expand-lit
+T=repeat-wrap
+T=nullch-wrap
+ALL_DONE
+  compiled
+T=fin-lit25000 size=25012
+  compiled
+T=fin-lit47000 size=47011
+  compiled
+T=inf-lit47000 size=47012
+  compiled
+T=fin-alt size=25014
+  compiled
+T=repeat-wrap-m size=198000
+  compiled
+T=repeat-wrap-m2 size=363000
+  compiled
+ALL_DONE
+  ok
+T=form=inf chars=13000
+  ok
+T=form=fin chars=13000
+  ok
+T=form=inf chars=14000
+  ok
+T=form=fin chars=14000
+  ok
+T=form=inf chars=15000
+  ok
+T=form=fin chars=15000
+  ok
+T=form=inf chars=16000
+  ok
+T=form=fin chars=16000
+  ok
+T=form=inf chars=17000
+  ok
+T=form=fin chars=17000
+  ok
+T=form=inf chars=21000
+  ok
+T=form=fin chars=21000
+  ok
+ALL_DONE

@@ -1,0 +1,29 @@
+# Pristine-tarball ASAN harness (omnibus lineage, NO docker backports).
+# Instruments compile_length_quantifier_node to print tlen/lower/upper so the
+# CVE overflow window (tlen*count wrapping int) can be hit deterministically.
+FROM ruby:3.3-bookworm AS builder
+RUN apt-get update && apt-get install -y --no-install-recommends \
+      autoconf bison build-essential curl ca-certificates >/dev/null \
+    && rm -rf /var/lib/apt/lists/*
+WORKDIR /usr/src
+RUN curl -sL -o ruby.tgz https://cache.ruby-lang.org/pub/ruby/3.3/ruby-3.3.12.tar.gz \
+    && echo "b06d63beae271933033e27f0a389bc582a009e7845357d44365c39de525a051b  ruby.tgz" | sha256sum -c \
+    && tar xzf ruby.tgz
+WORKDIR /usr/src/ruby-3.3.12
+# instrument: log every quantifier-length computation (tlen, bounds, infinite)
+RUN perl -0pi -e 's/(compile_length_quantifier_node\(QtfrNode\* qn, regex_t\* reg\)\n\{\n  int i, len, mod_tlen;\n  int infinite = IS_REPEAT_INFINITE\(qn->upper\);\n  int empty_info = qn->target_empty_info;\n  int tlen = compile_length_tree\(qn->target, reg\);)/$1\n  fprintf(stderr, "QN tlen=%d lower=%d upper=%d inf=%d\\n", tlen, qn->lower, qn->upper, infinite);/' regcomp.c \
+ && test "$(grep -c 'QN tlen' regcomp.c)" = "1"
+RUN ASAN_OPTIONS=detect_leaks=0 ./configure --prefix=/opt/ruby-pasan \
+      --disable-install-doc --without-baseruby \
+      CFLAGS="-O1 -fsanitize=address -fno-omit-frame-pointer -g" \
+      LDFLAGS="-fsanitize=address" \
+      optflags="-O1 -fsanitize=address" debugflags="-g" \
+    && ASAN_OPTIONS=detect_leaks=0 make -j"$(nproc)" > /dev/null \
+    && ASAN_OPTIONS=detect_leaks=0 make install > /dev/null
+
+FROM debian:bookworm-slim
+RUN apt-get update && apt-get install -y --no-install-recommends libasan8 >/dev/null && rm -rf /var/lib/apt/lists/*
+COPY --from=builder /opt/ruby-pasan /opt/ruby-pasan
+ENV ASAN_OPTIONS=abort_on_error=1:detect_leaks=0:symbolize=1
+WORKDIR /opt
+ENTRYPOINT ["/opt/ruby-pasan/bin/ruby"]
