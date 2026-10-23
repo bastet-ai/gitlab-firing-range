@@ -35,7 +35,6 @@ services:
         puma['worker_processes'] = 2
         sidekiq['max_concurrency'] = 5
         prometheus_monitoring['enable'] = false
-        grafana['enable'] = false
         prometheus['enable'] = false
         alertmanager['enable'] = false
         node_exporter['enable'] = false
