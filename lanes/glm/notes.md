@@ -191,3 +191,34 @@ Authoritative state. Commit per finding. Probes log: lanes/glm/probes.log
   live in dimensions that survive escaping: alternation count N,
   total size, literal codepoints. Grammar v3 = fuzz the org-ruby
   SHAPE (^(<kw>|...)\$, huge N, unicode) against embedded ruby.
+
+## Orchestrator investigation (00:4xZ) - WHERE IS THE 110264 FIX?
+Empirics, all verified this session:
+- libruby.so.3.3.12 sha256 IDENTICAL 19.5.0 vs 19.5.1 (e91c200...),
+  patchlevel 206 both. version-manifest diff: only git/gitaly/kas/
+  pages/rails/package-scripts bumps - NO ruby/onigmo component change.
+- Gemfile.lock diff 150->151: gitlab-markup 2.1.0->2.2.0 (diffed: pure
+  RDoc8 compat), rbs/rdoc/psych churn, org-ruby UNCHANGED 0.9.12.
+- clause.rb/untrusted_regexp/org-filters sha-identical across the pair.
+=> the 110264 fix is INVISIBLE in the 19.5.0->19.5.1 CE delta. Combined
+   with press ("GitLab patches Onigmo in its own builds") + F1 clean on
+   embedded ruby (GL ruby != official ruby behavior):
+   LEADING THEORY: omnibus ruby carried the Onigmo patch in BOTH images
+   (rebuilt earlier, e.g. with the Oct-12 batch) => docker tag 19.5.0-ce.0
+   may ALREADY contain the engine fix => CVE UNREPRODUCIBLE on our
+   current gitlab-vuln; the 'before 19.5.1' advisory range is about
+   package versions, not build content.
+CONSEQUENCES:
+- 19.5.1 cannot serve as engine negative control (identical libruby);
+  use OFFICIAL-ruby patched matrix + older GL images as controls.
+- ACTION (lane): pull gitlab-ce 19.4.2-ce.0 + 18.11.12-ce.0 (both pre
+  Oct-12 batch); sha256 libruby vs 19.5.x. If OLDER libruby != 19.5.x
+  => that's when GL ruby lacked the patches => fuzz EMBEDDED ruby of
+  those for the CVE crasher (embprobe.rb against docker exec -i, cheap;
+  no need to boot them for fuzzing - boot only when a crasher hits).
+  If libruby identical again => GL ships fix elsewhere (workhorse Go?
+  unlikely) or our F-family probes are just not CVE-shaped; widen fuzz
+  grammar toward integer-overflow constructs (case-fold expansion
+  sizes, CC ranges, (?() )cond numbering, backref distance int-casts
+  regcomp.c:2511 wraps negative - runtime no-op per audit, but check
+  with fuzz on EMBEDDED ruby which may differ from official!).
