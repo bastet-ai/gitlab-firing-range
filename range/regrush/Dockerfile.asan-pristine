@@ -19,9 +19,9 @@ RUN perl -0pi -e 's/(\{\n#define COMPILE_INIT_SIZE  20\n)/$1  fprintf(stderr, "O
  && test "$(grep -c 'QN2 tlen' regcomp.c)" = "1"
 RUN ASAN_OPTIONS=detect_leaks=0 ./configure --prefix=/opt/ruby-pasan \
       --disable-install-doc --without-baseruby \
-      CFLAGS="-O1 -fsanitize=address -fno-omit-frame-pointer -g" \
+      CFLAGS="-O1 -fsanitize=address -fno-omit-frame-pointer -g -DONIG_DEBUG_PARSE_TREE -DONIG_DEBUG" \
       LDFLAGS="-fsanitize=address" \
-      optflags="-O1 -fsanitize=address" debugflags="-g" \
+      optflags="-O1 -fsanitize=address -DONIG_DEBUG_PARSE_TREE -DONIG_DEBUG" debugflags="-g" \
     && ASAN_OPTIONS=detect_leaks=0 make -j"$(nproc)" > /dev/null \
     && ASAN_OPTIONS=detect_leaks=0 make install > /dev/null
 
