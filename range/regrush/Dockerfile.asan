@@ -10,12 +10,12 @@ WORKDIR /usr/src
 RUN curl -sL -o ruby.tgz https://cache.ruby-lang.org/pub/ruby/3.3/ruby-3.3.12.tar.gz \
     && tar xzf ruby.tgz
 WORKDIR /usr/src/ruby-3.3.12
-RUN ./configure --prefix=/opt/ruby-asan --disable-install-doc \
+RUN ASAN_OPTIONS=detect_leaks=0 ./configure --prefix=/opt/ruby-asan --disable-install-doc \
       --without-baseruby \
       CFLAGS="-O1 -fsanitize=address -fno-omit-frame-pointer -g" \
       LDFLAGS="-fsanitize=address" \
       optflags="-O1 -fsanitize=address" debugflags="-g" \
-    && make -j"$(nproc)" > /dev/null && make install > /dev/null
+    && ASAN_OPTIONS=detect_leaks=0 make -j"$(nproc)" > /dev/null && ASAN_OPTIONS=detect_leaks=0 make install > /dev/null
 
 FROM debian:bookworm-slim
 COPY --from=builder /opt/ruby-asan /opt/ruby-asan
