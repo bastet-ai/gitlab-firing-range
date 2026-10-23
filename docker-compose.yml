@@ -23,7 +23,7 @@ services:
     image: gitlab/gitlab-ce:19.5.0-ce.0        # PRE-patch (CVE-2026-110264)
     hostname: gitlab-vuln.local
     shm_size: 256m
-    ports: ["127.0.0.1:8022:80", "127.0.0.1:8052:443", "127.0.0.1:8053:22"]
+    ports: ["127.0.0.1:8022:8022", "127.0.0.1:8053:22"]
     volumes:
       - gl-vuln-config:/etc/gitlab
       - gl-vuln-logs:/var/log/gitlab
