@@ -488,3 +488,33 @@ ruby (oldest, pre-both-patch-rounds) for the CVE crasher.
   crossing 2^32 BBuf.used wrap even on -O3, since the outer decision
   uses the length-fn's negative value computed at RUNTIME, not UB-
   optimized constant folding).
+
+## R7-C2 empirical state (23-Oct ~08:0xZ)
+- MemNumType = SIGNED short (regint.h:692); 3.3.13 rejects num_repeat
+  > 32767 at compile (guard added). Pristine accepts; memnum wraps at
+  repeat #32768+.
+- TESTED on embedded omnibus ruby (all logged probes.log):
+  * a{2,3}x33000 + match: EXPANDS inline (no OP_REPEAT) - not a trigger.
+  * a{30,31}x33000 + all-success subject (1_023_000 = all-31):
+    matched clean 1.5ms. a{30,31}x65600 (wrap at 65536 for unsigned
+    readings): clean 3.4ms. => SUCCESS-path execution incl. wrapped
+    memnums is benign on this build (stack push/repeat_stk accesses
+    with negative mem apparently stay in-allocation).
+  * failing-subject backtracks: exponential/slow (rc=124 timeouts at
+    180-300s on 984k..1M subjects); NOT yet a native crash.
+  * exact-exhaustion fail ('b' after exact-30 prefix, 32800 quants):
+    also slow-backtrack timeout, no crash yet.
+- OPEN: need bytecode ground truth (does a{30,31} actually emit
+  OP_REPEAT per quantifier, and what memnum lands in the bytecode?)
+  => next build: add -DONIG_DEBUG_COMPILE to pasan (print_compiled_
+  byte_code_list at end of compile; combined w/ existing flags) and
+  dump the op list for a{30,31}x33000. Then target the OP_REPEAT_INC
+  retry path precisely with the wrapped mem in a SHALLOW backtrack.
+- ALSO QUEUED: C1-nested `(?:(?:"a"*30000){100000}){2}` (outer
+  expand decision fed by inner length-fn wrapped-negative tlen ->
+  6e9-byte emit crossing BBuf 32-bit wrap; build-flag independent
+  since the negative value is a runtime-computed operand).
+- NOTE re repo hygiene: my earlier `git add -A` from repo root swept
+  lanes/audit-neocities (another lane's dir, embedded gitlink) into
+  commit 96b5cf3 - flagged to orchestrator; from now on I add only
+  lanes/glm + gitlab2shell.py + range/regrush explicitly.

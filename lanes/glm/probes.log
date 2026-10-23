@@ -346,3 +346,6 @@ chars=30000: hwm_before=15436 hwm_after=15596 compiled
 chars=40000: hwm_before=15596 hwm_after=15756 compiled
 EMBED rc=0 out=compiled (len=198000) matched=true 
 EMBED rc=124 out=compiled (len=264000) 
+EMBED rc=0 out=compiled (len=524800) matched=true took=0.003394391 
+EMBED rc=0 out=compiled matched=true took=0.001529818 
+EMBED rc=124 out=compiled 
