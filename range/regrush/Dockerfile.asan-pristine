@@ -11,8 +11,8 @@ RUN curl -sL -o ruby.tgz https://cache.ruby-lang.org/pub/ruby/3.3/ruby-3.3.12.ta
     && tar xzf ruby.tgz
 WORKDIR /usr/src/ruby-3.3.12
 # instrument: log every quantifier-length computation (tlen, bounds, infinite)
-RUN perl -0pi -e 's/(onig_compile\(regex_t\* reg, const UChar\* pattern, const UChar\* pattern_end,\n             OnigErrorInfo\* einfo\)\n\{)/$1\n  fprintf(stderr, "ONIG_COMPILE len=%d\\n", (int)(pattern_end-pattern));/' regcomp.c \
- && test "$(grep -c ONIG_COMPILE regcomp.c)" = "1"
+RUN perl -0pi -e 's/(\{\n#define COMPILE_INIT_SIZE  20\n)/$1  fprintf(stderr, "ONIGC len=%d\\n", (int)(pattern_end-pattern));\n/' regcomp.c \
+ && test "$(grep -c ONIGC regcomp.c)" = "1"
 RUN ASAN_OPTIONS=detect_leaks=0 ./configure --prefix=/opt/ruby-pasan \
       --disable-install-doc --without-baseruby \
       CFLAGS="-O1 -fsanitize=address -fno-omit-frame-pointer -g" \
