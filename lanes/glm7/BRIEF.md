@@ -96,3 +96,5 @@ guest. All artifacts committed.
   meterpreter specifically - land the stager + handler = meterpreter.
 
 Orchestrator note 07:3xZ: qemu apt install FAILED first try (stale apt lists -> 404 on edk2/ovmf). Retry running proc_8cc1ac0c3fa0 (apt-get update first). If qemu-system-x86_64 still absent when you start, poll that job instead of re-running apt. If ovmf fails again: it is OPTIONAL - Debian cloud image boots fine with legacy BIOS (no -bios flag); skip edk2.
+
+Orchestrator 08:0xZ: image COMPLETE + SHA512-verified OK (70ef6adc... vs official; 438MB is correct for trixie generic-amd64 - the 700MB estimate was wrong; the pull had finished, you were idle). Proceed rung 1 with vm/debian-13.qcow2 as-is. Delete nothing in vm/.

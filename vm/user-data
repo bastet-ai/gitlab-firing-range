@@ -1,0 +1,35 @@
+#cloud-config
+users:
+  - name: debvm
+    sudo: ALL=(ALL) NOPASSWD:ALL
+    shell: /bin/bash
+    ssh_authorized_keys:
+      - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIB0C37zLD9psbU2JSNXqFsirLZV7pkbk5hGA+GC49xW8 bastet-to-titor-dspark
+write_files:
+  - path: /root/CANARY
+    content: "FLAG{debvm:810ed7331a2e7342}"
+    permissions: "0644"
+  - path: /root/build-ruby.sh
+    permissions: "0755"
+    content: |
+      #!/bin/bash
+      # pristine ruby 3.3.12 from tarball, -O1 -g, plus gdb/gcc
+      set -x
+      export CFLAGS="-O1 -g"
+      export MAKEFLAGS="-j2"
+      apt-get update
+      apt-get install -y build-essential gdb libssl-dev zlib1g-dev libyaml-dev libffi-dev curl
+      cd /usr/local/src
+      curl -fsSLO https://cache.ruby-lang.org/pub/ruby/3.3/ruby-3.3.12.tar.gz
+      tar xf ruby-3.3.12.tar.gz
+      cd ruby-3.3.12
+      ./configure --disable-install-doc --enable-shared
+      make || make
+      make install
+      hash -r
+      ruby -v > /root/RUBY_BUILT 2>&1
+      echo "FLAG{debvm:810ed7331a2e7342}" > /CANARY
+      chmod 644 /CANARY
+      echo DONE > /root/BUILD_DONE
+runcmd:
+  - [ bash, -c, "nohup /root/build-ruby.sh >/var/log/ruby-build.log 2>&1 &" ]
