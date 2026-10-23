@@ -190,3 +190,56 @@ ruby3.4: free(): double free detected in tcache 2
 onigmo: 
 ruby 3.4.11 (2026-09-23 revision 592f1ffdb3) +PRISM [aarch64-linux]
 F1-3.4fresh rc=133 out=free(): double free detected in tcache 2
+[21:23:39] GLRUBY rc=0 desc=deep nest 100k (no depth guard?) out="err"
+[21:23:39] GLRUBY rc=0 desc=LB char_len wrap out="ok"
+[21:23:39] GLRUBY rc=0 desc=LB nested 46341^2 out="ok"
+[21:23:39] GLRUBY rc=0 desc=LB alt branches big out="ok"
+[21:23:39] GLRUBY rc=0 desc=onigmo ver out=
+-e:8:in `block in <main>': undefined method `exited?' for nil (NoMethodError)
+
+  crashed += 1 unless st.exited? && st.exitstatus == 0
+                        ^^^^^^^^
+	from <internal:numeric>:237:in `times'
+	from -e:3:in `<main>'
+0
+[21:24:09] OFFICIAL src="\\\\k<-2>" -> ok
+[21:24:10] OFFICIAL src="a|\\\\k<-2>" -> ok
+[21:24:10] OFFICIAL src="(?<=\\\\g<n19>)|\\\\k<-5" -> ok
+[21:24:10] OFFICIAL src="(a)\\\\k<-1>" -> ok
+[21:24:10] GITLAB src="\\\\k<-2>" -> ok
+[21:24:10] GITLAB src="a|\\\\k<-2>" -> ok
+[21:24:10] GITLAB src="(?<=\\\\g<n19>)|\\\\k<-5" -> ok
+[21:24:10] GITLAB src="(a)\\\\k<-1>" -> ok
+free(): double free detected in tcache 2
+"\\k<-2>" => RegexpError: invalid backref number/name: /\k<-2>/
+"a|\\k<-2>" => RegexpError: invalid backref number/name: /a|\k<-2>/
+"(?<=\\g<n19>)|\\k<-5" => RegexpError: invalid group name <-5>: /(?<=\g<n19>)|\k<-5/
+"(a)\\k<-1>" => ok
+"\\k<-5>" => RegexpError: invalid backref number/name: /\k<-5>/
+"x|\\k<-5" => RegexpError: invalid group name <-5>: /x|\k<-5/
+---
+0
+#<Fiddle::DLError: unknown symbol "onig_version">
+"\\k<-2>" => RegexpError: invalid backref number/name: /\k<-2>/
+"a|\\k<-2>" => RegexpError: invalid backref number/name: /a|\k<-2>/
+"(?<=\\g<n19>)|\\k<-5" => RegexpError: invalid group name <-5>: /(?<=\g<n19>)|\k<-5/
+"(a)\\k<-1>" => ok
+"\\k<-5>" => RegexpError: invalid backref number/name: /\k<-5>/
+"x|\\k<-5" => RegexpError: invalid group name <-5>: /x|\k<-5/
+[21:24:43] GL19.5.0 rc=0 desc=a{2147483647} out="too big number for repeat range: /a{2147"
+[21:24:43] GL19.5.0 rc=0 desc=a{99999999999} out="too big number for repeat range: /a{9999"
+[21:24:43] GL19.5.0 rc=0 desc=a{100000000000000000000} out="too big number for repeat range: /a{1000"
+[21:24:43] GL19.5.0 rc=1 desc=a{4294967296} match out=-e:1:in `initialize': too big number for repeat range: /a{4294967296}/ (RegexpError)
+	from -e:1:in `
+[21:24:43] GL19.5.0 rc=0 desc=deepnest 100k msg out="parse depth limit over: /(?:(?:(?:(?:(?:"
+[21:27:29] gitlab-vuln health: 000 ; version page:
+host sign_in: 200
+GitLab
+GitLab Community Edition
+GitLab Community Edition" class="gl-invisible 
+GitLab Community Edition" name="description">
+GitLab Community Edition" property="og:descrip
+19.5.0
+gitlab-ce 19.5.0
+
+Component                Installed Version                          Version GUID                                                                                                                              

@@ -29,21 +29,56 @@ Authoritative state. Commit per finding. Probes log: lanes/glm/probes.log
   in docker logs. = GitLab "Onigmo native worker crash" signature.
 - F1b: fuzzer also found same-class variants (seed 1266, 1268):
   calls+lookbehind+quantifiers, same double-free family.
+- **F1-N (reclassified)**: F1 double-free (`a|\k<-2>` etc.) crashes ONLY
+  official ruby image builds (3.3.12, 3.4.11, fresh 3.3-bookworm tag);
+  GitLab's embedded ruby 3.3.12 rejects the family cleanly ("invalid
+  group name" / "invalid backref"). No post-fix ruby releases exist yet
+  (3.3.13/3.4.12 absent from Docker Hub) -> F1 = NEW bug of ours,
+  separate from CVE-2026-110264, range-relevant, unpatched upstream.
+- **R2 libruby identical**: sha256(/opt/gitlab/embedded/lib/libruby.so.3.3)
+  is BYTE-IDENTICAL between gitlab-ce 19.5.0-ce.0 and 19.5.1-ce.0
+  (both ruby 3.3.12 rev 0581089df9). => the CVE fix in 19.5.1 is
+  APP-LAYER (gitlab-rails guard), NOT an Onigmo rebuild. Consequence:
+  the Onigmo integer overflow STILL EXISTS in 19.5.1's ruby; crashers
+  found against 19.5.0's embedded ruby are natively valid on both; the
+  patched control must reject at the APP layer (validation), not native.
+- Ladder 1 DONE: gitlab-vuln up (127.0.0.1:8022, port fix 8022:8022;
+  19.5 dropped `grafana` key -> removed from OMNIBUS_CONFIG).
+  sign_in 200; version asserted 19.5.0 (VERSION + version-manifest).
+  Embedded ruby: 3.3.12 aarch64, same parse guards (repeat 100000,
+  parse-depth, 32767 groups), DIFFERENT \k<-n> handling vs official.
+- Embedded-ruby fuzz round 1 (12k samples): 0 crashes. Round 2 running
+  (100k samples, seeds 9000+).
+- Lookbehind length int-cast (regcomp.c:2511) wraps negative for
+  char_len*count>2^31 but runtime step_back(n<0) is a no-op: benign.
+
 - Correction (probes.log): `\nnnn` multi-digit backref overflow theory
   REFUTED - `\99999999999` is literal 9s (skip_backref path), not int
   wrap. Backref/group paths bounded (ONIG_MAX_CAPTURE_GROUP_NUM=32767,
   MemNumType short; onig_scan_unsigned_number overflow-checked).
-- Lookbehind length int-cast (regcomp.c:2511) wraps negative for
-  char_len*count>2^31 but runtime step_back(n<0) is a no-op: benign.
+- Ruby matrix for F1: 3.0/3.1/3.2 clean (different \k<-n> parse),
+  3.3.12 + 3.4.11 CRASH. Official-ruby-build-specific.
 
 ## Open questions
-- Is F1 THE CVE bug (fixed in 19.5.1 embedded ruby) or a separate
-  unfixed bug? -> test ruby matrix 3.0-3.4 + gitlab embedded ruby.
-- Fuzzer continues (100k samples) for integer-overflow-specific classes.
+- CVE crasher for GitLab's Onigmo (integer overflow per advisory):
+  fuzz round 2 on embedded ruby in progress (100k). Also targeted
+  candidates: case-fold expansion products, char-class int fields,
+  (?(cond)) numbers, \x{...} in CC, name-table paths.
+- What EXACTLY did 19.5.1 change at app layer? -> diff gitlab-rails
+  between the two images (regex-compile guard location) = tells us the
+  vulnerable SURFACE too (ladder 3 lead).
+- F1 upstream: not fixed in any current ruby release (3.3.12/3.4.11
+  both crash); watch for 3.3.13/3.4.12 to see if the Oct-21 patch set
+  covers it.
 
 ## Ladder status
 - [x] harness build+run (regrush33 :8021 up)
-- [x] enumerate Onigmo version (6.1.3 @ ruby 3.3.12)
-- [x] LADDER 2 CRASHER: deterministic worker crash on /compile (F1)
-- [ ] ruby version matrix (3.0/3.1/3.2/3.3/3.4) + gitlab embedded ruby
-- gitlab-vuln image PULLED (not started)
+- [x] enumerate Onigmo version (6.1.3 @ ruby 3.3.12; gitlab embedded
+      ruby 3.3.12 = same guards, different \k<-n> handling, ver string n/a)
+- [x] LADDER 2 CRASHER: deterministic worker crash on /compile (F1,
+      official-ruby-only -> F1-N)
+- [x] LADDER 1: gitlab-vuln up, healthy (:8022 200), version 19.5.0
+- [x] ruby matrix (3.0/3.1/3.2/3.3/3.4) + gitlab embedded ruby tested
+- [x] patched-control libruby diff (identical -> app-layer fix)
+- [ ] ladder 3: pre-auth surface in gitlab (org-mode render)
+- both gitlab images pulled; only gitlab-vuln RUNS (one-heavy rule)
