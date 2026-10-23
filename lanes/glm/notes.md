@@ -106,3 +106,4 @@ Authoritative state. Commit per finding. Probes log: lanes/glm/probes.log
 - [x] patched-control libruby diff (identical -> app-layer fix)
 - [ ] ladder 3: pre-auth surface in gitlab (org-mode render)
 - both gitlab images pulled; only gitlab-vuln RUNS (one-heavy rule)
+- NOTE: push failed 21:3x (remote: repository disabled, 403). Commit is\n  local; retry push later.
