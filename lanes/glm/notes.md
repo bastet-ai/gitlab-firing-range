@@ -59,11 +59,35 @@ Authoritative state. Commit per finding. Probes log: lanes/glm/probes.log
 - Ruby matrix for F1: 3.0/3.1/3.2 clean (different \k<-n> parse),
   3.3.12 + 3.4.11 CRASH. Official-ruby-build-specific.
 
+- **R3 (MAJOR): 19.5.0-ce.0 vs 19.5.1-ce.0 FULL image diff — NO CVE fix
+  visible.** Hashed ALL of gitlab-rails (57k files): only 8 changed .rb
+  (GraphQL scopes, OIDC discovery host, LDAP email escape, milestone API,
+  backup select, pipeline iid — none regex-related) + new
+  rouge_fallthrough_patch.rb (PERF only: raise Fallthrough without
+  backtrace — explains "Org mode render error burst" detection).
+  Gem diff: gitlab-markup 2.1.0->2.2.0 (RDoc-8 compat only, NO regex
+  change), rdoc/rbs/psych/stringio churn. libruby.so byte-identical
+  (R2). => The Docker Hub 19.5.1-ce.0 image contains NOTHING that
+  patches an Onigmo integer overflow; its build layer date (Oct 20)
+  PRECEDES the advisory (Oct 21). The :8023 "patched control" premise is
+  questionable — flag to orchestrator. Practical consequence: both
+  images are equally crashable natively; the crasher hunt target is
+  GitLab's embedded ruby 3.3.12 (omnibus build), which so far survives
+  212k+ fuzz samples (grammar v1+v2, incl. IGNORECASE/fold atoms).
+- Embedded ruby fuzz rounds: v1 12k + v2 100k (IGNORECASE+fold) = 0
+  native crashes. Official-ruby fuzz same grammar: many F1-family
+  hits (baseline confirms grammar covers crash-prone space).
+
 ## Open questions
 - CVE crasher for GitLab's Onigmo (integer overflow per advisory):
-  fuzz round 2 on embedded ruby in progress (100k). Also targeted
-  candidates: case-fold expansion products, char-class int fields,
-  (?(cond)) numbers, \x{...} in CC, name-table paths.
+  grammar v3 needed — deeper int-field coverage: named-group table
+  sizes, (?(cond)) huge nums, \g<rel> calls, absent-operator (?~)
+  nestings, possessive quantifier stacks, cc-range folding combos.
+  Consider also: MALLOC_PERTURB_ in harness to surface silent corruption.
+- R3 follow-up: if orchestrator confirms control image is pre-advisory,
+  the patched-control negative may need a rebuilt image or the rails
+  diff gives the surface: none seen -> CVE fix must come from a
+  different distribution artifact.
 - What EXACTLY did 19.5.1 change at app layer? -> diff gitlab-rails
   between the two images (regex-compile guard location) = tells us the
   vulnerable SURFACE too (ladder 3 lead).
