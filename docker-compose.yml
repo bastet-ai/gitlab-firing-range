@@ -1,0 +1,80 @@
+services:
+  # ---- harness lane: minimal Ruby app that compiles attacker regex ----
+  # fast shaping loop (seconds to restart) vs GitLab's minutes.
+  # One ruby version per service; vulnerable builds are pinned.
+  regrush33:
+    build:
+      context: ./range/regrush
+      args: { RUBY: "ruby:3.3-bookworm" }
+    ports: ["127.0.0.1:8021:80"]
+    restart: unless-stopped
+  regrush33p:
+    # negative control: rebuilt/re-patched ruby 3.3 (after apt upgrade of
+    # libonigmo / rebuilt ruby) - fill exact patched tag when identified
+    build:
+      context: ./range/regrush
+      args: { RUBY: "ruby:3.3-bookworm" }
+    ports: ["127.0.0.1:8031:80"]
+    restart: unless-stopped
+    profiles: ["control"]
+
+  # ---- real GitLab targets (HEAVY: ~8GB each; run ONE at a time) ----
+  gitlab-vuln:
+    image: gitlab/gitlab-ce:19.5.0-ce.0        # PRE-patch (CVE-2026-110264)
+    hostname: gitlab-vuln.local
+    shm_size: 256m
+    ports: ["127.0.0.1:8022:80", "127.0.0.1:8052:443", "127.0.0.1:8080:22"]
+    volumes:
+      - gl-vuln-config:/etc/gitlab
+      - gl-vuln-logs:/var/log/gitlab
+      - gl-vuln-data:/var/opt/gitlab
+    environment:
+      GITLAB_OMNIBUS_CONFIG: |
+        external_url 'http://127.0.0.1:8022'
+        gitlab_rails['gitlab_shell_ssh_port'] = 8080
+        puma['worker_processes'] = 2
+        sidekiq['max_concurrency'] = 5
+        prometheus_monitoring['enable'] = false
+        grafana['enable'] = false
+        prometheus['enable'] = false
+        alertmanager['enable'] = false
+        node_exporter['enable'] = false
+        redis_exporter['enable'] = false
+        postgres_exporter['enable'] = false
+        gitlab_exporter['enable'] = false
+    restart: unless-stopped
+    profiles: ["gitlab-vuln"]
+
+  gitlab-patched:
+    image: gitlab/gitlab-ce:19.5.1-ce.0        # POST-patch control
+    hostname: gitlab-patched.local
+    shm_size: 256m
+    ports: ["127.0.0.1:8023:80", "127.0.0.1:8081:22"]
+    volumes:
+      - gl-patched-config:/etc/gitlab
+      - gl-patched-logs:/var/log/gitlab
+      - gl-patched-data:/var/opt/gitlab
+    environment:
+      GITLAB_OMNIBUS_CONFIG: |
+        external_url 'http://127.0.0.1:8023'
+        gitlab_rails['gitlab_shell_ssh_port'] = 8081
+        puma['worker_processes'] = 2
+        sidekiq['max_concurrency'] = 5
+        prometheus_monitoring['enable'] = false
+        grafana['enable'] = false
+        prometheus['enable'] = false
+        alertmanager['enable'] = false
+        node_exporter['enable'] = false
+        redis_exporter['enable'] = false
+        postgres_exporter['enable'] = false
+        gitlab_exporter['enable'] = false
+    restart: unless-stopped
+    profiles: ["gitlab-patched"]
+
+volumes:
+  gl-vuln-config: {}
+  gl-vuln-logs: {}
+  gl-vuln-data: {}
+  gl-patched-config: {}
+  gl-patched-logs: {}
+  gl-patched-data: {}
