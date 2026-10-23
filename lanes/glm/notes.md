@@ -222,3 +222,14 @@ CONSEQUENCES:
   sizes, CC ranges, (?() )cond numbering, backref distance int-casts
   regcomp.c:2511 wraps negative - runtime no-op per audit, but check
   with fuzz on EMBEDDED ruby which may differ from official!).
+
+## R5 step 1: older-image libruby survey
+- 19.4.2-ce.0: ruby 3.3.12 (rev 0581089df9, SAME version as 19.5.x) but
+  libruby sha 4441d2730372... DIFFERENT build (omnibus rebuilt between
+  releases; could be build-env noise or Oct-12-set ruby rebuild).
+- 18.11.12-ce.0: ruby 3.3.10 (2025-10-23, rev 343ea05002), libruby
+  sha 9a6f752db89a... — completely different (pre-Oct-12) ruby.
+- 19.5.0/19.5.1: e91c20055c2a (identical).
+=> Older builds DO carry different omnibus ruby. The engine-fix
+absence in 19.5.1 stands; now fuzzing 18.11.12's 3.3.10 embedded
+ruby (oldest, pre-both-patch-rounds) for the CVE crasher.
