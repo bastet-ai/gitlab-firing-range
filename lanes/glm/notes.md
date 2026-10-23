@@ -442,3 +442,49 @@ ruby (oldest, pre-both-patch-rounds) for the CVE crasher.
      memnum short wrap -> runtime OOB).
   4. All candidate shapes through regrush-pasan (ONIG_DEBUG_PARSE_TREE)
      if ambiguous.
+
+## R7 fix-diff analysis (v3_3_12...v3_3_13, authoritative, 23-Oct release)
+- Released fixes: 3.3.13/3.4.12/4.0.9 "Regexp compilation fixes related
+  to GitLab CVE-2026-89078/93577/97229/110264". Official diff
+  v3_3_12..v3_3_13 (regex files) == my ruby_3_3 branch diff (same
+  hunks) - analysis was already complete; now confirmed authoritative.
+- CONSTRUCT MAP (pristine = vulnerable; 3.3.13 = guarded):
+  C1 quantifier-expand SIGNED int overflow: tlen*lower (and
+  (tlen+SIZE_OP_PUSH)*upper) vs QUANTIFIER_EXPAND_LIMIT_SIZE=50, in
+  compile_length_quantifier_node AND compile_quantifier_node EMIT
+  decisions. Fix = IS_EXPAND_LIMIT_OK division form.
+  C2 num_repeat/num_null_check (int) wrap past MemNumType(short)
+  range, checked ONLY post-increment in 3.3.13
+  (ONIGERR_TOO_MANY_RANGE_REPEAT / _NULL_CHECK). Pristine: wraps at
+  >32767 counted repeats (OP_REPEAT-emitting quantifiers, i.e. ranges
+  with (tlen+PUSH)*upper>50, e.g. a{30,31}) -> wrapped memnum stored
+  in bytecode -> runtime stack-array OOB when the late repeat EXECUTES.
+  C3 MAX_COMPILED_PROGRAM_SIZE=INT_MAX/4 cap in add_opcode + unchecked
+  final OP_END return now checked (goto err_unset).
+  C0 parse_alt cleanup UAF (F1/F2 family) fixed (official-lineage
+  artifact; omnibus rejects \k<-N> early so unaffected).
+- BBuf struct: used/alloc are UNSIGNED INT (32-bit); BBUF_ADD computes
+  `int used = pos + (int)n` SIGNED => a program crossing 2^31 bytes
+  overflows the size math mid-emit (realloc-underalloc then OOB write
+  with attacker-controlled bytecode content) - C3's cap exists to
+  prevent exactly this. Single-quantifier expansion max = 42949 x
+  100000 (window edge tlen in (21475,42949) for lower=100000) but...
+- **BUILD-FLAG SENSITIVITY DISCOVERED**: on omnibus (-O3) builds the
+  naive C1 pattern does NOT expand (UB optimization; VmHWM 160KB
+  delta for (?:"a"*22000..40000){100000}); on pristine-ASAN (-O1) the
+  same patterns DO expand (multi-GB emits, runs minutes). => C1
+  exploitability is per-build; the omnibus target may be immune to
+  naive C1. The UB-free constructs (C2, C3) are build-independent -
+  they are the likely real-target CVE triggers.
+- IN FLIGHT: C2 walk test - re=Regexp.new("a{30,31}"*33000) +
+  match("a"*984000) on (a) embedded omnibus ruby (900s cap) and (b)
+  pasan ASAN - both walking at 6+ min (33000 chained greedy ranges =
+  slow; crash expected when repeat #32768+ executes with wrapped
+  memnum). Logs /tmp/embed-c2.log, /tmp/pasan-c2.log.
+- NEXT after C2 verdict: C3 unchecked-OP_END variant (force BBUF_ADD
+  fail at the very end = silent truncation), and C1-nested variant
+  `(?:(?:"a"*30000){100000}){2}` (inner length fn returns wrapped
+  negative tlen -> outer expand decision corrupt -> 6e9-byte emit
+  crossing 2^32 BBuf.used wrap even on -O3, since the outer decision
+  uses the length-fn's negative value computed at RUNTIME, not UB-
+  optimized constant folding).

@@ -340,3 +340,9 @@ match len=250000
 match len=500000
   => false
 match len=1000000
+chars=22000: hwm_before=15116 hwm_after=15276 compiled
+chars=25000: hwm_before=15276 hwm_after=15436 compiled
+chars=30000: hwm_before=15436 hwm_after=15596 compiled
+chars=40000: hwm_before=15596 hwm_after=15756 compiled
+EMBED rc=0 out=compiled (len=198000) matched=true 
+EMBED rc=124 out=compiled (len=264000) 
