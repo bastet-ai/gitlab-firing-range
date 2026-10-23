@@ -400,3 +400,45 @@ ruby (oldest, pre-both-patch-rounds) for the CVE crasher.
   (b) build ASAN ruby with EXACT omnibus configure flags (--with-
   jemalloc, fortify) for target-accurate instrumentation; (c) org-ruby
   surface shape count-sweep at 1M members plain-only.
+
+## R7 (this turn, ~02:0xZ): Oct-21 PATCH REVERSED - constructs identified
+- ruby_3_3 branch vs pristine tarball diff (regparse.c/regcomp.c/regexec.c/
+  regint.h) = THE Oct-21 fix set. Pristine constructs (THE CVE):
+  C1 quantifier-expand int overflow: tlen*qn->lower (or (tlen+PUSH)*upper)
+  vs QUANTIFIER_EXPAND_LIMIT_SIZE=50 in BOTH compile_length_quantifier_node
+  AND compile_quantifier_node emit decisions (branch fixes = IS_EXPAND_LIMIT_OK
+  division form).
+  C2 num_repeat/num_null_check MemNumType(short) wrap guards added.
+  C3 MAX_COMPILED_PROGRAM_SIZE cap added (RelAddrType int wrap).
+  (+ parse_alt UAF fix = the F1/F2 family - official-lineage artifact.)
+- LINEAGE FACTS nailed this turn:
+  * ruby's onig_compile_ruby SKIPS the compile_length_* pass (direct
+    compile_tree w/ dynamic BBUF; init_size=2*pattern) => C1 length-fn
+    variant UNREACHABLE via Regexp.new; only EMIT decisions matter.
+  * emit {N,N} expand path = compile_tree_n_times = pure concatenation
+    (no rel-addrs) => multi-GB expansion is SIZE-SAFE on 64-bit (BBUF
+    grows; verified: 2.2-2.5GB programs compile+match CLEAN on embedded
+    ruby, VmHWM confirmed expansion at tlen 25006, OP_REPEAT at 47008).
+  * int32 negative-wrap window for the emit decision (lower=100000):
+    tlen in (21475, 42949) => literals ~21500..42900 chars EXPAND;
+    <21475 positive-safe; >42949 wraps positive => OP_REPEAT (tiny).
+- match-time rel-addr deep-walk on expanded 2.5GB fin-pattern: subjects
+  up to 500k clean (=>false); 1M-char match TIMED OUT (rc=124, pending
+  rerun) - not yet a crash.
+- INSTRUMENTATION ASSETS: regrush-pasan:3.3.12 = pristine tarball ASAN
+  build w/ ONIGC entry marker + QN1/QN2 quantifier probes +
+  -DONIG_DEBUG_PARSE_TREE (prints full parse tree to stderr at compile;
+  USE IT to see node structure for any candidate). Build gotchas
+  logged in Dockerfile.asan-pristine (leak-san, libasan8, perl anchors).
+- NEXT STEPS (in priority):
+  1. BBUF `used` TYPE CHECK (regint.h): if unsigned int -> program
+     >4.29e9 bytes (e.g. (?:"a"*50000){100000}=5e9 bytes) wraps reg->used
+     mid-emit -> SIZE ARITHMETIC CORRUPTION = the CVE crash candidate.
+     Test (?:"a"*50000){100000} and {100000,} compile+match on embedded
+     ruby (expect native crash or corrupted program).
+  2. INF-form deep-walk: (?:"a"*25000){100000,} match vs "a"*N for
+     N up to ~2.5M (walks PUSH/JUMP rel-addrs in the >2^31 program).
+  3. num_repeat wrap match test: "a{2,3}"*33000 + match "aaa" (OP_REPEAT
+     memnum short wrap -> runtime OOB).
+  4. All candidate shapes through regrush-pasan (ONIG_DEBUG_PARSE_TREE)
+     if ambiguous.

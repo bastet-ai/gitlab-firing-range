@@ -305,3 +305,38 @@ T=form=inf chars=21000
 T=form=fin chars=21000
   ok
 ALL_DONE
+T 25000x100000 fin
+  compiled
+  matched: false
+T 25000x100000 inf
+  compiled
+  matched: false
+T 47000x100000 fin
+  compiled
+  matched: false
+T 47000x100000 inf
+  compiled
+  matched: false
+T 22000x100000 fin
+  compiled
+  matched: false
+T 22000x100000 inf
+  compiled
+  matched: false
+T 40000x99999 fin
+  compiled
+  matched: false
+T 40000x99999 inf
+  compiled
+  matched: false
+DONE
+hwm before: 15492
+hwm after compile: 15652
+hwm after match: 15652
+matched false
+compiled; program walk test:
+match len=250000
+  => false
+match len=500000
+  => false
+match len=1000000
