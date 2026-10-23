@@ -56,6 +56,13 @@ is the authoritative running state. Authorized research, loopback-only.
       range: scripts/score.sh <target> <evidence>).
 - [ ] 6. patched-control negative: same payload vs :8023 + patched
       harness control -> must NOT crash. Record.
+- [ ] 8. (DEAN DIRECTIVE 2026-10-22) PoC deliverable: gitlab2shell.py
+      at REPO ROOT - same conventions as phpbleed-bastet.py: loopback
+      guard, timestamped [>]/[+]/[x] log lines, modes probe (surface
+      reachability) / crash (worker-crash DoS PoC) / rce (the goal),
+      --target http://127.0.0.1:PORT, canary-verified. Push to GitHub
+      as glab: gitlab2shell.py <milestone>. Interim commits with
+      working probe/crash modes are EXPECTED before rce lands.
 - [ ] 7. detection: run GitLab's two Sigma rules against our own logs
       (defense lane - we want detection + hardening notes too).
 
