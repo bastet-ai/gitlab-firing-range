@@ -140,3 +140,24 @@ Authoritative state. Commit per finding. Probes log: lanes/glm/probes.log
 - Pre-auth Regexp.new(user-input) site enumeration in 19.5.0 rails:
   next; candidates: project regex search? explore search, repo file
   render paths, banzai filters.
+
+## Orchestrator facts (00:2xZ)
+- libruby.so.3.3.12 sha256 IDENTICAL 19.5.0 vs 19.5.1
+  (e91c20055c2a7e...), both patchlevel 206 -> 110264 fix NOT in the
+  ruby binary of either image.
+- F1 vs EMBEDDED ruby (lanes/glm/embprobe.rb, docker exec -i ...
+  /opt/gitlab/embedded/bin/ruby /tmp/embprobe.rb): clean RegexpError,
+  NOT a crash -> GitLab embedded build already behaves differently from
+  official ruby 3.3.12 (they patch Onigmo in their build, confirmed
+  by press). => CVE crasher will NOT be F1-shaped; the vulnerable
+  construct was fixed in omnibus ruby at some point? NO - both GL
+  images share the libruby; if the crasher class is patched in it, it
+  is patched in BOTH -> control-useless for engine bug, AND older GL
+  ruby versions may differ: test embedded ruby of 19.4.2 vs 18.11.x.
+- Where IS the 110264 fix then? Hypotheses: (H1) app-layer guard in a
+  diff the full-image diff dismissed as 'gem churn' - RECHECK the gem
+  churn list for onigmo/regex gems in Gemfile.lock diff; (H2) fix in
+  gitlab-workhorse (Go, regex via RE2 - unlikely); (H3) omnibus
+  software bump elsewhere (ruby is identical though).
+- NEXT-PAIR: 19.4.2 vs 19.4.3 diff (this pair MUST contain a visible
+  delta somewhere - pull both, full diff, focus lib/ + embedded).
