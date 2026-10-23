@@ -107,3 +107,17 @@ Authoritative state. Commit per finding. Probes log: lanes/glm/probes.log
 - [ ] ladder 3: pre-auth surface in gitlab (org-mode render)
 - both gitlab images pulled; only gitlab-vuln RUNS (one-heavy rule)
 - NOTE: push failed 21:3x (remote: repository disabled, 403). Commit is\n  local; retry push later.
+
+## Rung 8 deliverable (gitlab2shell.py)
+- 2026-10-23: gitlab2shell.py at repo ROOT, phpbleed-bastet conventions
+  (loopback guard, [>]/[+]/[x] timestamped lines, --target profiles:
+  regrush/gitlab/control, modes probe/crash/rce-TODO).
+- probe: gitlab -> sign_in 200 CE, /api/v4/version 401 (anon cannot
+  read version; used embedded VERSION file instead - 19.5.0), public
+  projects 0 (ladder 3 needs admin-created public repo), /explore 200.
+  regrush -> ruby 3.3.12 p206, canary present, pid-oracle note.
+- crash: regrush F1-N family ALL WORKER CRASH (request killed +
+  service recovered). gitlab: surface driver ready, no public repo yet.
+- rce: TODO structure documented (leak-first, no shipped constants).
+- Fuzz round 2 (v2 grammar, embedded ruby): DONE, 0 crashes (no
+  134/139 hits). Round 3 (deeper int fields) next.
