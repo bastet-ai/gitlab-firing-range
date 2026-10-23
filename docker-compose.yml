@@ -23,7 +23,7 @@ services:
     image: gitlab/gitlab-ce:19.5.0-ce.0        # PRE-patch (CVE-2026-110264)
     hostname: gitlab-vuln.local
     shm_size: 256m
-    ports: ["127.0.0.1:8022:80", "127.0.0.1:8052:443", "127.0.0.1:8080:22"]
+    ports: ["127.0.0.1:8022:80", "127.0.0.1:8052:443", "127.0.0.1:8053:22"]
     volumes:
       - gl-vuln-config:/etc/gitlab
       - gl-vuln-logs:/var/log/gitlab
@@ -31,7 +31,7 @@ services:
     environment:
       GITLAB_OMNIBUS_CONFIG: |
         external_url 'http://127.0.0.1:8022'
-        gitlab_rails['gitlab_shell_ssh_port'] = 8080
+        gitlab_rails['gitlab_shell_ssh_port'] = 8053
         puma['worker_processes'] = 2
         sidekiq['max_concurrency'] = 5
         prometheus_monitoring['enable'] = false
