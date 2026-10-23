@@ -1,0 +1,44 @@
+[21:13:27] rc=0 desc=baseline tiny src=p /a/.source out="a"
+[21:13:27] rc=0 desc=huge quantifier 2^31-1 src=Regexp.new("a{2147483647}") rescue p "err" out="err"
+[21:13:27] rc=0 desc=quantifier 2^31 (overflow) src=Regexp.new("a{2147483648}") rescue p "err" out="err"
+[21:13:28] rc=0 desc=quantifier 10^19 src=Regexp.new("a{99999999999999999999}") rescue p "err" out="err"
+[21:13:28] rc=0 desc=nested repeat product src=Regexp.new("(?:a{100000}){100000}") rescue p "err" out=
+[21:13:28] rc=0 desc=nested repeat product overflow src=Regexp.new("(?:a{46341}){46341}") rescue p "err" out=
+[21:13:28] rc=0 desc=nested n,m src=Regexp.new("(?:a{2,100}){2,100}{2,100}{2,100}{2,100}{2,100}") rescue p "err" out=
+[21:13:28] rc=0 desc=alt count 50000 src=Regexp.new("a" + ("|a"*50000)) rescue p "err" out=
+[21:13:34] rc=0 desc=limit msg src=begin; Regexp.new("a{2147483648}"); rescue => e; p e.message; end out="too big number for repeat range: /a{2147483648}/"
+[21:13:34] rc=0 desc=limit msg nested src=begin; Regexp.new("(?:a{100000}){100000}"); rescue => e; p e.message; else; p "c out="compiled ok"
+[21:13:34] rc=0 desc=deep nest 100k groups src=Regexp.new("(?:" * 100000 + "a" + ")" * 100000) rescue p "err" out="err"
+[21:13:34] rc=0 desc=deep nest capture groups src=Regexp.new("(" * 20000 + "a" + ")" * 20000) rescue p "err" out="err"
+[21:13:35] rc=0 desc=deep nest 1k x compile buffer src=Regexp.new("(?:" * 1000 + "a" + ")" * 1000) rescue p "err" out=
+[21:13:35] rc=0 desc=alt+group 20k src=Regexp.new("(a)" + ("|(a)"*20000)) rescue p "err" out=
+[21:13:35] rc=0 desc=possessive nested src=Regexp.new("(?>a{100000}){100000}{100000}") rescue p "err" out=
+[21:13:35] rc=0 desc=lookbehind quantified src=Regexp.new("(?<=a{1000}){1000}") rescue p "err" out=
+[21:13:45] rc=0 desc=msg deep 100k src=begin; Regexp.new("(?:" * 100000 + "a" + ")" * 100000); rescue => e; p e.message out="parse depth limit over: /(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:
+[21:13:45] rc=0 desc=msg groups 20k src=begin; Regexp.new("(" * 20000 + "a" + ")" * 20000); rescue => e; p e.message; en out="parse depth limit over: /((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((
+[21:13:45] rc=0 desc=nest depth 65535 src=n=65535; begin; Regexp.new("(?:" * n + "a" + ")" * n); rescue => e; p e.message; out="parse depth limit over: /(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:(?:
+[21:13:45] rc=0 desc=backref big src=begin; Regexp.new("(a)\\99999999999"); rescue => e; p e.message; end out=
+[21:13:45] rc=0 desc=backref 2^31 src=begin; Regexp.new("\\2147483647"); rescue => e; p e.message; end out="invalid multibyte escape: /\\2147483647/"
+[21:13:46] rc=0 desc=cc 100k ranges src=r="[a-b]"*100000; begin; Regexp.new(r); rescue => e; p e.message; else; p "ok";  out="ok"
+[21:13:46] rc=0 desc=cc 200k chars src=r="[a]"*200000; begin; Regexp.new(r); rescue => e; p e.message; else; p "ok"; en out="ok"
+[21:13:47] rc=0 desc=unicode prop deep src=begin; Regexp.new("\\p{Alpha}"*50000); rescue => e; p e.message; else; p "ok"; e out="ok"
+[21:13:54] rc=0 desc=backref wrap 2^32+1 -> 1? src=re=Regexp.new("(a)\\4294967297"); p re.match("aa")&.to_s out=nil
+[21:13:54] rc=1 desc=backref wrap 2^31 src=re=Regexp.new("(a)\\2147483648"); p re.match("aa")&.to_s out=-e:1:in `initialize': invalid multibyte escape: /(a)\2147483648/ (RegexpError)
+	from -e:1:in `new'
+	from -e:1:in `<main>'
+[21:13:54] rc=0 desc=backref 2^64-ish src=re=Regexp.new("(a)\\18446744073709551617"); p re.match("aa")&.to_s out=nil
+[21:13:54] rc=0 desc=backref 11 nines behavior src=re=Regexp.new("(a)\\99999999999"); p re.match("aa")&.to_s out=nil
+[21:13:54] rc=0 desc=backref 10^20 match? src=re=Regexp.new("(a)\\100000000000000000000"); p re.match("aa")&.to_s out=nil
+[21:14:41] rc=0 desc=wrap value check src=p (99999999999 % 2**32); p (99999999999 % 2**32).to_s(16) out=1215752191
+"4876e7ff"
+[21:14:41] rc=1 desc=codepoint match test src=cp=(99999999999 % 2**32); re=Regexp.new("\\99999999999"); p re.match([cp].pack("U"))&.to_s out=-e:1:in `match': invalid byte sequence in UTF-8 (ArgumentError)
+
+cp=(99999999999 % 2**32); re=Regexp.new("\\99999999999"); p re.match([cp].pack("U"))&.to_s
+                                                                     ^^^^^^^^^^^^^^
+	from -e:1
+[21:14:41] rc=0 desc=a{1000000} src=begin; Regexp.new("a{1000000}"); rescue => e; p e.message; else; p "ok"; end out="too big number for repeat range: /a{1000000}/"
+[21:14:41] rc=0 desc=a{100000} src=begin; Regexp.new("a{100000}"); rescue => e; p e.message; else; p "ok"; end out="ok"
+[21:14:42] rc=0 desc=nested product 1e9 src=begin; Regexp.new("(?:a{1000}){1000}{1000}"); rescue => e; p e.message; else; p "ok"; end out="ok"
+[21:14:42] rc=0 desc=nested product 4 lvls src=begin; Regexp.new("(?:(?:a{1000}){1000}){1000}{1000}"); rescue => e; p e.message; else; p  out="ok"
+[21:14:42] rc=0 desc=nested product 10 lvls src=s="a{1000}"; 10.times{s="(?:#{s}){1000}"}; begin; Regexp.new(s); rescue => e; p e.message; out="ok"
+[21:14:42] rc=0 desc=nested 1e12 direct src=begin; Regexp.new("(?:a{1000000}){1000000}"); rescue => e; p e.message; else; p "ok"; end out="too big number for repeat range: /(?:a{1000000}){1000000}/"
