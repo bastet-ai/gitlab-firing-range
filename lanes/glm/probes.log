@@ -253,3 +253,4 @@ Component                Installed Version                          Version GUID
 "a{2147483647}" => RegexpError: too big number for repeat range: /a{214748364
 "(?:(?:(?:(?:(?:(?:(?:(?:(" => RegexpError: parse depth limit over: /(?:(?:(?:(?:(?:(?:(?
 "(a)(a)(a)(a)(a)(a)(a)(a)(" => RegexpError: too many capture groups are specified: /(a)(a
+[00:25:09] EMBED rc=0 (clean, PROBE_DONE) v3-shape-fuzz 50k seeds777 vs 19.5.0 embedded ruby (cc interiors/codepoints, nesting depth fixed-quant chains, alt-count x casefold, cond numbering, LB distance wraps)

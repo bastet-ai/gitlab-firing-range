@@ -276,3 +276,39 @@ ruby (oldest, pre-both-patch-rounds) for the CVE crasher.
   org-ruby ^(<kw>|...)\$ with keyword-count escalation (R4 dims),
   wiki-finder ^escaped-IGNORECASE, plus count*length boundary sweep
   vs omnibus ruby via embprobe stdin batches.
+
+## R6: shape-fuzz v3 + ASAN harness (2026-10-23 ~00:2xZ)
+- R6.1 v3 SHAPE-FUZZ DONE CLEAN: embgen3.rb 50k patterns (grammar:
+  cc interiors with codepoint ranges to 0x7FFFFFFF incl. reversed
+  ranges, nested POSIX classes, fold-ambiguous member stacks;
+  repetition-of-repetition DEPTH chains (fixed {N,N}, lower==upper,
+  4-30 levels -> char_len multiply path, distance_multiply
+  int-cast); alternation-count x casefold expansion (20/200/2000/20000
+  members incl. ss/s/K/ligatures under plain+IGNORECASE compile);
+  (?(cond)) numbering 1..40000; lookbehind distance wrap shapes).
+  Corpus 293MB JSONL. Result vs 19.5.0 embedded ruby:
+  [EMBED rc=0 clean, PROBE_DONE, 50000/50000] - logged probes.log.
+  Cumulative embedded-ruby fuzz: ~360k samples, ZERO native crashes.
+- R6.2 ASAN HARNESS BUILD RUNNING: range/regrush/Dockerfile.asan
+  (multi-stage: ruby 3.3.12 tarball, CFLAGS -O1
+  -fsanitize=address, entrypoint = embprobe on stdin; image tag
+  regrush-asan:3.3.12). Build log /tmp/asan-build.log. NEXT: mount
+  v2+v3 corpora against ASAN ruby - near-misses (OOB reads/heap-use)
+  become visible reports even without crash. NOTE: ASAN build =
+  OFFICIAL parse lineage (crashes F1) not omnibus parse - reports on
+  shared engine paths are still relevant to omnibus source (same
+  tarball), but omnibus-specific parse guards may mask some.
+- Oracle/asset index (post-compaction survival map):
+  * fuzz assets: range/regrush/{fuzz.rb,fuzz2.rb,embgen.rb,embgen3.rb,
+    embprobe.rb}; corpora in harness container /tmp (v2 100k pats100k,
+    v3 50k /tmp/v3.jsonl on host too).
+  * probes.log convention: 'EMBED rc=' lines for embedded-ruby results.
+  * gitlab2shell.py: crash --target embedded (docker exec oracle).
+  * containers: emb181112/emb1942 = stopped probe containers (clean);
+    gitlab-vuln running (:8022); regrush (:8021); images 19.4.2/18.11.12
+    pulled.
+  * KEY RESULTS SO FAR: F1-N (official-only double-free, unpatched
+    upstream); libruby identical 19.5.0<->19.5.1 (engine fix ABSENT
+    from control image - flagged); with_fallback dead code; ALL native
+    compile sites escape()d/admin/constant (no clean pre-auth surface);
+    omnibus = vanilla 3.3.12 tarball built --with-jemalloc.

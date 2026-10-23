@@ -1,0 +1,26 @@
+# ASAN harness: ruby 3.3.12 built with AddressSanitizer, running embprobe.rb
+# on stdin JSONL. Same engine source as official 3.3.12 (crashes on F1 family,
+# unlike omnibus build) so ASAN turns near-misses into reports on BOTH the
+# official parse lineage and any shared overflow.
+FROM ruby:3.3-bookworm AS builder
+RUN apt-get update && apt-get install -y --no-install-recommends \
+      autoconf bison build-essential curl ca-certificates >/dev/null \
+    && rm -rf /var/lib/apt/lists/*
+WORKDIR /usr/src
+RUN curl -sL -o ruby.tgz https://cache.ruby-lang.org/pub/ruby/3.3/ruby-3.3.12.tar.gz \
+    && tar xzf ruby.tgz
+WORKDIR /usr/src/ruby-3.3.12
+RUN ./configure --prefix=/opt/ruby-asan --disable-install-doc \
+      --without-baseruby \
+      CFLAGS="-O1 -fsanitize=address -fno-omit-frame-pointer -g" \
+      LDFLAGS="-fsanitize=address" \
+      optflags="-O1 -fsanitize=address" debugflags="-g" \
+    && make -j"$(nproc)" > /dev/null && make install > /dev/null
+
+FROM debian:bookworm-slim
+COPY --from=builder /opt/ruby-asan /opt/ruby-asan
+ENV ASAN_OPTIONS=abort_on_error=1:detect_leaks=0:symbolize=1
+COPY embprobe.rb /opt/embprobe.rb
+WORKDIR /opt
+# stdin: JSONL patterns; native crash -> nonzero exit; ASAN report on stderr
+ENTRYPOINT ["/opt/ruby-asan/bin/ruby", "/opt/embprobe.rb"]
