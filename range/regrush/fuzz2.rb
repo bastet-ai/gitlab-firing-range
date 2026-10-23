@@ -105,7 +105,7 @@ f.puts "START batches=#{BATCHES} batch=#{BATCH} seed0=#{SEED0}"
   File.write(tmp, recs.map { |r| JSON.generate(r) }.join("\n"))
 
   out = IO.popen(
-    [{ 'RUBYOPT' => '' }, 'ruby', '-e', CHILD_SRC, tmp,
+    [{ 'RUBYOPT' => '' }, (ENV['FR_RUBY'] || 'ruby'), '-e', CHILD_SRC, tmp,
      err: [:child, :out]],
     &:read
   )
@@ -119,10 +119,10 @@ f.puts "START batches=#{BATCHES} batch=#{BATCH} seed0=#{SEED0}"
       li = last.to_i
       (li..[li + 8, BATCH - 1].min).each do |j|
         rc = recs[j]
-        one = IO.popen(['ruby', '-e', CHILD_SRC, '/dev/stdin', in: IO.popen? ? nil : nil] ) rescue nil
+        one = nil rescue nil
         # simpler: write single file
         File.write(tmp + ".1", JSON.generate(i: 0, s: rc[:s]))
-        o2 = IO.popen(['ruby', '-e', CHILD_SRC, tmp + '.1'], &:read)
+        o2 = IO.popen([(ENV['FR_RUBY'] || 'ruby'), '-e', CHILD_SRC, tmp + '.1'], &:read)
         s2 = $?
         unless s2.success?
           crashes << { seed: seed, i: j, s: rc[:s], sig: s2.termsig, exit: s2.exitstatus }

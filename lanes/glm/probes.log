@@ -69,3 +69,124 @@ cp=(99999999999 % 2**32); re=Regexp.new("\\99999999999"); p re.match([cp].pack("
 
 HTTP_CODE=000
 [21:19:32] post-crash pid: 1
+ruby3.0: Unable to find image 'ruby:3.0-bookworm' locally
+ruby3.0: docker: Error response from daemon: manifest for ruby:3.0-bookworm not found: manifest unknown: manifest unknown
+ruby3.0: 
+ruby3.0: Run 'docker run --help' for more information
+ruby3.1: Unable to find image 'ruby:3.1-bookworm' locally
+ruby3.1: 3.1-bookworm: Pulling from library/ruby
+ruby3.1: 545aa82ec479: Pulling fs layer
+ruby3.1: 4378a6c11dea: Pulling fs layer
+ruby3.1: 140d15be2fea: Pulling fs layer
+ruby3.1: 1d9d474cce08: Pulling fs layer
+ruby3.1: 657cfd5e9f0a: Pulling fs layer
+ruby3.1: cee8068fc3f3: Pulling fs layer
+ruby3.1: e503bc9b077f: Pulling fs layer
+ruby3.1: 1d9d474cce08: Waiting
+ruby3.1: 657cfd5e9f0a: Waiting
+ruby3.1: cee8068fc3f3: Waiting
+ruby3.1: e503bc9b077f: Waiting
+ruby3.1: 4378a6c11dea: Verifying Checksum
+ruby3.1: 4378a6c11dea: Download complete
+ruby3.1: 545aa82ec479: Verifying Checksum
+ruby3.1: 545aa82ec479: Download complete
+ruby3.1: 657cfd5e9f0a: Verifying Checksum
+ruby3.1: 657cfd5e9f0a: Download complete
+ruby3.1: 545aa82ec479: Pull complete
+ruby3.1: cee8068fc3f3: Verifying Checksum
+ruby3.1: cee8068fc3f3: Download complete
+ruby3.1: e503bc9b077f: Verifying Checksum
+ruby3.1: e503bc9b077f: Download complete
+ruby3.1: 140d15be2fea: Verifying Checksum
+ruby3.1: 140d15be2fea: Download complete
+ruby3.1: 4378a6c11dea: Pull complete
+ruby3.1: 1d9d474cce08: Verifying Checksum
+ruby3.1: 1d9d474cce08: Download complete
+ruby3.1: 140d15be2fea: Pull complete
+ruby3.1: 1d9d474cce08: Pull complete
+ruby3.1: 657cfd5e9f0a: Pull complete
+ruby3.1: cee8068fc3f3: Pull complete
+ruby3.1: e503bc9b077f: Pull complete
+ruby3.1: Digest: sha256:91627f55e8969006aab67d15c92fb930500ff73948803da1330b8a853fecebb5
+ruby3.1: Status: Downloaded newer image for ruby:3.1-bookworm
+ruby3.1: "invalid group name <-5>: /(?<="
+ruby3.2: Unable to find image 'ruby:3.2-bookworm' locally
+ruby3.2: 3.2-bookworm: Pulling from library/ruby
+ruby3.2: d03e31a3f7ef: Pulling fs layer
+ruby3.2: 0af98f0879b3: Pulling fs layer
+ruby3.2: 95b913dee6e1: Pulling fs layer
+ruby3.2: 2ad0741a80b8: Pulling fs layer
+ruby3.2: 0710b1a9b525: Pulling fs layer
+ruby3.2: 9f2d066a035d: Pulling fs layer
+ruby3.2: 4b400e8be86c: Pulling fs layer
+ruby3.2: 0710b1a9b525: Waiting
+ruby3.2: 9f2d066a035d: Waiting
+ruby3.2: 4b400e8be86c: Waiting
+ruby3.2: 2ad0741a80b8: Waiting
+ruby3.2: 0af98f0879b3: Verifying Checksum
+ruby3.2: 0af98f0879b3: Download complete
+ruby3.2: d03e31a3f7ef: Verifying Checksum
+ruby3.2: d03e31a3f7ef: Download complete
+ruby3.2: 0710b1a9b525: Verifying Checksum
+ruby3.2: 0710b1a9b525: Download complete
+ruby3.2: 95b913dee6e1: Verifying Checksum
+ruby3.2: 95b913dee6e1: Download complete
+ruby3.2: 4b400e8be86c: Verifying Checksum
+ruby3.2: 4b400e8be86c: Download complete
+ruby3.2: 9f2d066a035d: Verifying Checksum
+ruby3.2: 9f2d066a035d: Download complete
+ruby3.2: d03e31a3f7ef: Pull complete
+ruby3.2: 0af98f0879b3: Pull complete
+ruby3.2: 2ad0741a80b8: Verifying Checksum
+ruby3.2: 2ad0741a80b8: Download complete
+ruby3.2: 95b913dee6e1: Pull complete
+ruby3.2: 2ad0741a80b8: Pull complete
+ruby3.2: 0710b1a9b525: Pull complete
+ruby3.2: 9f2d066a035d: Pull complete
+ruby3.2: 4b400e8be86c: Pull complete
+ruby3.2: Digest: sha256:bf13a46a498fb4055d0e52495c351a2648c8bc8d41b473ee3f734041a74c7f56
+ruby3.2: Status: Downloaded newer image for ruby:3.2-bookworm
+ruby3.2: "invalid group name <-5>: /(?<="
+ruby3.4: Unable to find image 'ruby:3.4-bookworm' locally
+ruby3.4: 3.4-bookworm: Pulling from library/ruby
+ruby3.4: a97cb698362f: Already exists
+ruby3.4: aaeb1b620bf2: Already exists
+ruby3.4: 6a3f500343e7: Already exists
+ruby3.4: 87ebb0f22f55: Already exists
+ruby3.4: a005fcd654ef: Pulling fs layer
+ruby3.4: 9de6427c74fa: Pulling fs layer
+ruby3.4: f80b2a611edb: Pulling fs layer
+ruby3.4: f80b2a611edb: Verifying Checksum
+ruby3.4: a005fcd654ef: Verifying Checksum
+ruby3.4: a005fcd654ef: Download complete
+ruby3.4: a005fcd654ef: Pull complete
+ruby3.4: 9de6427c74fa: Verifying Checksum
+ruby3.4: 9de6427c74fa: Download complete
+ruby3.4: 9de6427c74fa: Pull complete
+ruby3.4: f80b2a611edb: Pull complete
+ruby3.4: Digest: sha256:1aed73d35b66ce974febaefe42e8385abb8cbf6244ea4f45b266be9178acfd37
+ruby3.4: Status: Downloaded newer image for ruby:3.4-bookworm
+ruby3.4: free(): double free detected in tcache 2
+"invalid group name <-5>: /(?<="
+[21:21:04] rc=134 desc=defined call variant out=free(): double free detected in tcache 2
+[21:21:04] rc=0 desc=err: unclosed group out="end pattern with unmatched parenthesis: "
+[21:21:04] rc=0 desc=err: bad utf \x{110000} out="invalid hex escape: /(?<=\\g<n19>)|\\x{110"
+[21:21:04] rc=0 desc=err: dup group name out="undefined name <n19> reference: /(?<a>x)"
+[21:21:04] rc=134 desc=err: \k<-5 with def groups out=free(): double free detected in tcache 2
+[21:21:11] rc=134 desc=bare alt a|\k<-2> out=free(): double free detected in tcache 2
+[21:21:11] rc=0 desc=no alt plain out="invalid backref number/name: /"
+[21:21:11] rc=134 desc=alt in group out=free(): double free detected in tcache 2
+[21:21:11] rc=134 desc=3 branches out=free(): double free detected in tcache 2
+[21:21:12] rc=134 desc=\k<-1> (near) out=free(): double free detected in tcache 2
+[21:21:12] rc=134 desc=\k<+2> fwd out=free(): double free detected in tcache 2
+[21:21:12] rc=134 desc=3.2 check same out=free(): double free detected in tcache 2
+[21:21:19] gitlab-vuln embedded ruby: ruby 3.3.12 (2026-07-16 revision 0581089df9) [aarch64-linux]
+[21:21:19] rc=0 F1-in-gitlab out="invalid backref number/name: /a|\\k<-2>/"
+[21:21:26] gitlab-ruby rc=0 desc=F1 lookbehind+call out="invalid group name <-5>: /(?<=\\g<n19>)|\\"
+[21:21:26] gitlab-ruby rc=0 desc=F1a quantified alt out="invalid backref number/name: /(?:.|\\k<-8"
+[21:21:26] gitlab-ruby rc=0 desc=F1b seed1266 out="invalid backref number/name: /(?<k1>(?:A"
+[21:22:51] FRESH-3.3-bookworm F1-minimal rc=133 out=free(): double free detected in tcache 2
+[21:22:51] FRESH-3.3-bookworm F1-orig rc=133 out=free(): double free detected in tcache 2
+onigmo: 
+ruby 3.4.11 (2026-09-23 revision 592f1ffdb3) +PRISM [aarch64-linux]
+F1-3.4fresh rc=133 out=free(): double free detected in tcache 2
