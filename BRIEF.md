@@ -56,6 +56,13 @@ is the authoritative running state. Authorized research, loopback-only.
       range: scripts/score.sh <target> <evidence>).
 - [ ] 6. patched-control negative: same payload vs :8023 + patched
       harness control -> must NOT crash. Record.
+- [ ] 9. (DEAN DIRECTIVE 2026-10-23) x86_64 QEMU Debian VM + meterpreter
+      PoC for the gitlab-reachable vulnerable component: full ladder in
+      lanes/glm7/BRIEF.md (VM via cloud image+cloud-init, pristine ruby
+      built in-guest, C-family primitive -> stager -> multi/handler
+      meterpreter session + guest canary = WIN). Lane: tmux glab-glm7,
+      GLM-5.3. This rung supersedes idle fuzzing; aarch64 container port
+      scoped afterward (glm7 notes step 7).
 - [ ] 8. (DEAN DIRECTIVE 2026-10-22) PoC deliverable: gitlab2shell.py
       at REPO ROOT - same conventions as phpbleed-bastet.py: loopback
       guard, timestamped [>]/[+]/[x] log lines, modes probe (surface
