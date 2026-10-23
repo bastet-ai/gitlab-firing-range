@@ -121,3 +121,22 @@ Authoritative state. Commit per finding. Probes log: lanes/glm/probes.log
 - rce: TODO structure documented (leak-first, no shipped constants).
 - Fuzz round 2 (v2 grammar, embedded ruby): DONE, 0 crashes (no
   134/139 hits). Round 3 (deeper int fields) next.
+
+## Ladder 3 surface analysis (org-mode)
+- Org-mode render in GitLab CE = org-ruby 0.9.12 gem (via
+  lib/gitlab/other_markup.rb; ORG_MODE_EXTENSIONS %w[org]).
+- org-ruby COMPILES regex with file-derived content BUT the #+TODO /
+  SEQ_TODO / TYP_TODO keyword path Regexp.escape()s every keyword
+  (parser.rb store_in_buffer_setting) -> metachar injection blocked;
+  the compiled shape is ^(<escaped kw>|<escaped kw>...)\$ .
+- UNBOUNDED field = keyword COUNT (alternation count; BRIEF intel
+  field). One #+TODO line with megabytes of keywords -> hundreds of
+  thousands of alternation members. Standalone compile test vs
+  embedded ruby: n=100k/1M/4M alternations ALL compile ok (rc=0) -
+  count alone insufficient. Next: combos (count x nesting x options),
+  and whether the render path adds length constraints that matter.
+- Other org-ruby interpolations: html_output_buffer strip_regexp
+  (indent int), headline.rb keyword sub (fixed Keywords). Safe-ish.
+- Pre-auth Regexp.new(user-input) site enumeration in 19.5.0 rails:
+  next; candidates: project regex search? explore search, repo file
+  render paths, banzai filters.

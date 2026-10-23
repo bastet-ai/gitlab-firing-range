@@ -243,3 +243,6 @@ GitLab Community Edition" property="og:descrip
 gitlab-ce 19.5.0
 
 Component                Installed Version                          Version GUID                                                                                                                              
+[23:06:02] GLRUBY alt-count n=100000 rc=0 out=ok
+[23:06:03] GLRUBY alt-count n=1000000 rc=0 out=ok
+[23:06:05] GLRUBY alt-count n=4000000 rc=0 out=ok
