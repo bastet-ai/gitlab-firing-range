@@ -18,6 +18,8 @@ CHILD_SRC = <<~'RB'
     $stdout.flush
     begin
       Regexp.new(rec[:s])
+      Regexp.new(rec[:s], Regexp::IGNORECASE)
+      Regexp.new(rec[:s], Regexp::IGNORECASE | Regexp::MULTILINE)
     rescue Exception
       # ruby-level error is fine; native crash aborts here
     end
@@ -46,7 +48,7 @@ quant = lambda {
 }
 
 atom = ->(d) {
-  case rand(24)
+  case rand(30)
   when 0 then "a"
   when 1 then rand(32..126).chr
   when 2 then "\\x{#{rd.(7, rand(4).zero?)}}"
@@ -68,9 +70,15 @@ atom = ->(d) {
   when 18 then "\\p{Alnum}"
   when 19 then "[[:alpha:][:digit:]]"
   when 20 then "\\M-\\C-#{rand(32..126).chr}"
-  when 21 then ("a".."z").to_a.sample * (1 + rand(4))
+  when 21 then ["a", "k", "s", "ß", "ẞ", "ﬁ", "Σ", "σ", "ς", "ſ", "\u212A", "\u1F60", "ẛ", "ﬅ"].sample * (1 + rand(6))
   when 22 then "\\g<n#{rand(0...30)}>"
   when 23 then "(?~#{atom.(d + 1)})"
+  when 24 then "[kſẞß\u212A]{#{rd.(3, false)}}"
+  when 25 then "[a-#{["\\x{212A}", "\\x{1F600}", "\\x{10FFFF}", "\\x{7FFFFFFF}"].sample}]"
+  when 26 then "(?i)#{["k", "ß", "ﬁ", "\u212A"].sample * (1 + rand(4))}"
+  when 27 then "\\x{#{[0x212A, 0x1F82, 0x1F87, 0x104B3, 0x7FFFFFFF, rand(0x80..0x10FFFF)].sample}}"
+  when 28 then "\\u{#{rd.(6, rand(3).zero?)}}"
+  when 29 then "(?<=#{["k", "ß", "ﬁ", "\u212A", "a"] .sample * (1 + rand(3))})"
   end
 }
 
