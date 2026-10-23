@@ -312,3 +312,18 @@ ruby (oldest, pre-both-patch-rounds) for the CVE crasher.
     from control image - flagged); with_fallback dead code; ALL native
     compile sites escape()d/admin/constant (no clean pre-auth surface);
     omnibus = vanilla 3.3.12 tarball built --with-jemalloc.
+
+## R6.2 ASAN harness OPERATIONAL (build done, run live)
+- regrush-asan:3.3.12 image: ruby 3.3.12 (official tarball lineage)
+  built -O1 -fsanitize=address, entrypoint = embprobe.rb on stdin
+  JSONL. Build gotcha: LeakSanitizer kills miniruby boot ->
+  ASAN_OPTIONS=detect_leaks=0 at build AND runtime stage needs
+  libasan8 (bookworm-slim).
+- VALIDATION: F1 (a|\k<-2>) under ASAN -> **AddressSanitizer:
+  heap-use-after-free, regparse.c:1210 in onig_node_free** - exact
+  bug shape symbolized (F1-N confirmed UAF/double-free, official
+  parse lineage).
+- v3 shape-fuzz corpus (50k) running under ASAN (at ~40k, 0 ASAN
+  errors so far). Next: v2 corpus (100k), then mine ASAN reports
+  for NEAR-MISS shapes (OOB reads/writes that glibc/jemalloc builds
+  survive silently = candidate CVE shapes).
