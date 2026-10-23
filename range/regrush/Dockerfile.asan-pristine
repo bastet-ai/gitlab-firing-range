@@ -11,7 +11,7 @@ RUN curl -sL -o ruby.tgz https://cache.ruby-lang.org/pub/ruby/3.3/ruby-3.3.12.ta
     && tar xzf ruby.tgz
 WORKDIR /usr/src/ruby-3.3.12
 # instrument: log every quantifier-length computation (tlen, bounds, infinite)
-RUN perl -0pi -e 's/(compile_length_quantifier_node\(QtfrNode\* qn, regex_t\* reg\)\n\{\n  int i, len, mod_tlen;\n  int infinite = IS_REPEAT_INFINITE\(qn->upper\);\n  int empty_info = qn->target_empty_info;\n  int tlen = compile_length_tree\(qn->target, reg\);)/$1\n  fprintf(stderr, "QN tlen=%d lower=%d upper=%d inf=%d\\n", tlen, qn->lower, qn->upper, infinite);/' regcomp.c \
+RUN perl -0pi -e 's/(compile_length_quantifier_node\(QtfrNode\* qn, regex_t\* reg\)\n\{\n  int len, mod_tlen;\n  int infinite = IS_REPEAT_INFINITE\(qn->upper\);\n  int empty_info = qn->target_empty_info;\n  int tlen = compile_length_tree\(qn->target, reg\);)/$1\n  fprintf(stderr, "QN tlen=%d lower=%d upper=%d inf=%d\\n", tlen, qn->lower, qn->upper, infinite);/' regcomp.c \
  && test "$(grep -c 'QN tlen' regcomp.c)" = "1"
 RUN ASAN_OPTIONS=detect_leaks=0 ./configure --prefix=/opt/ruby-pasan \
       --disable-install-doc --without-baseruby \
