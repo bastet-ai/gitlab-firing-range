@@ -252,3 +252,27 @@ ruby (oldest, pre-both-patch-rounds) for the CVE crasher.
 - Step 2 running: 100k grammar-v2 JSONL vs 18.11.12 embedded ruby
   (3.3.10) via embprobe.rb stdin batch. F1-family parse check on
   3.3.10: same omnibus lineage behavior (no F1, same guards).
+
+## R5 steps 1-2 COMPLETE + jemalloc insight
+- 100k grammar-v2 probes CLEAN on BOTH omnibus embedded rubies:
+  18.11.12 (3.3.10) and 19.4.2 (different 3.3.12 build, sha 4441d2..).
+  With 19.5.0's earlier 212k: NO native crash on any omnibus build.
+- Omnibus ruby build config: vanilla ruby 3.3.12 tarball (manifest
+  sha b06d63..) BUT built with **--with-jemalloc** + fortify flags.
+  Implications: (a) glibc tcache double-free ABORT oracle ABSENT on
+  gitlab (jemalloc silent) - BUT jemtest (F1 + 200k alloc churn)
+  SURVIVED: consistent with R4 parse-difference (omnibus rejects
+  \k<-N> at fetch_name BEFORE the buggy cleanup path runs - F1
+  genuinely unreachable in omnibus, not merely silent); (b) heap
+  layout/allocator differs from official - heap-shaping offsets for
+  the eventual exploit must be derived on the omnibus jemalloc.
+- Parse-lineage note: omnibus \k<-n> handling == official 3.1/3.2
+  ("invalid group name") vs official 3.3.12/3.4.11 (accept-then-crash
+  in F1 shape). Same-source different-behavior puzzle open: official
+  docker ruby images vs omnibus tarball builds - to resolve, diff
+  fetch_name paths via targeted probes or obtain official image
+  build provenance. NOT blocking: oracle + target are omnibus.
+- NEXT (grammar v3): wrap corpus in the actual surface shapes:
+  org-ruby ^(<kw>|...)\$ with keyword-count escalation (R4 dims),
+  wiki-finder ^escaped-IGNORECASE, plus count*length boundary sweep
+  vs omnibus ruby via embprobe stdin batches.
