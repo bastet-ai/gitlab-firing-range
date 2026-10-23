@@ -94,3 +94,5 @@ guest. All artifacts committed.
   lands via our overflow, big meterpreter stage comes over network.
 - Alternatives for honesty: reverse_tcp shell (small), but Dean asked
   meterpreter specifically - land the stager + handler = meterpreter.
+
+Orchestrator note 07:3xZ: qemu apt install FAILED first try (stale apt lists -> 404 on edk2/ovmf). Retry running proc_8cc1ac0c3fa0 (apt-get update first). If qemu-system-x86_64 still absent when you start, poll that job instead of re-running apt. If ovmf fails again: it is OPTIONAL - Debian cloud image boots fine with legacy BIOS (no -bios flag); skip edk2.
