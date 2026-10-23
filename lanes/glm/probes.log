@@ -42,3 +42,12 @@ cp=(99999999999 % 2**32); re=Regexp.new("\\99999999999"); p re.match([cp].pack("
 [21:14:42] rc=0 desc=nested product 4 lvls src=begin; Regexp.new("(?:(?:a{1000}){1000}){1000}{1000}"); rescue => e; p e.message; else; p  out="ok"
 [21:14:42] rc=0 desc=nested product 10 lvls src=s="a{1000}"; 10.times{s="(?:#{s}){1000}"}; begin; Regexp.new(s); rescue => e; p e.message; out="ok"
 [21:14:42] rc=0 desc=nested 1e12 direct src=begin; Regexp.new("(?:a{1000000}){1000000}"); rescue => e; p e.message; else; p "ok"; end out="too big number for repeat range: /(?:a{1000000}){1000000}/"
+[21:16:19] rc=0 desc=LB overflow 3e9 out="ok"
+[21:16:23] rc=0 desc=LB overflow 3e9 match out=nil
+[21:16:24] rc=0 desc=LB near-boundary 2e9 out="ok"
+[21:16:24] rc=0 desc=LB moderate 1e9 out="compiled"
+[21:16:41] rc=0 desc=40000 groups out="too many capture groups are specified: /()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()()(
+[21:16:41] rc=0 desc=40000 groups backref 32768 compile out="too short escaped multibyte character: /(a)(a)(a)(a)(a)(a)(a)(a)(a)(a)(a)(a)(a)(a)(a)(a)(a)(a)(a)(a)(a)(a)(a)(a)(a)(a)(a)(a)(a)(a)(a)(a)(a)(a)(a)(a)(a)(a)(a)(a)(a)(a)(a)(a)(a)(a)(a)(a)(a)(a)(a)(a)(a)
+[21:16:42] rc=1 desc=40000 groups backref 32768 match out=-e:1:in `initialize': too short escaped multibyte character: /(a)(a)(a)(a)(a)(a)(a)(a)(a)(a)(a)(a)(a)(a)(a)(a)(a)(a)(a)(a)(a)(a)(a)(a)(a)(a)(a)(a)(a)(a)(a)(a)(a)(a)(a)(a)(a)(a)(a)(a)(a)(a)(a)(a)(a)(a)
+[21:16:45] rc=0 desc=32767 groups out="ok"
+[21:16:46] rc=0 desc=32768 groups out="too many capture groups are specified: /"
