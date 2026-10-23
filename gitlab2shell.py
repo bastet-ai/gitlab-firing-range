@@ -232,22 +232,32 @@ def crash_gitlab(base, t0):
 
 # ------------------------------------------------------------------ rce ---
 def rce(base, t0):
-    """TODO structure: gated on ladder 4 (ASAN harness primitive shape).
+    """Two-step plan skeleton (staged; plugs in the moment an embedded
+    crasher exists):
 
-    Stages once the overflow -> corruption shape is known:
-      1. PRIM   deterministic heap OOB write via regex compile (size/value/
-                offset from ASAN regrush build)
-      2. READ   arbitrary read gadget from the corruption -> leak PIE/libruby
-      3. WRITE  write primitive (tcache/freelist poisoning or node-table
-                overwrite in the regex compiler)
-      4. EXEC   redirect a function pointer / C level call chain
-      5. CANARY read /CANARY over the exploited path, verify FLAG{gitlab-vuln:...}
+    STEP 1 - CRASH->CORRUPT: replace the omnibus-clean corpus with the
+    embedded crasher; the compile-path overflow (CVE class: heap OOB
+    write in the regex compile buffer, size/value/offset per ASAN
+    report from regrush-asan:3.3.12) yields a deterministic write.
+    Heap grooming slots TBD per primitive class:
+      - tcache/jemalloc freelist poisoning (omnibus = jemalloc!):
+        arena bin shaping via prior regex compiles (same puma worker);
+      - node-table overwrite (regparse Node* arrays) -> later
+        onig_node_free -> arbitrary write gadget;
+      - bytecode buffer (BBUF) length overflow -> OOB into adjacent
+        heap chunk header.
+    STEP 2 - READ->EXEC: arbitrary read gadget (forged pointer in a
+    freed-then-reused Node) -> leak libruby PIE bias; write primitive
+    -> redirect a function pointer on the regex compile path; command
+    exec; read /CANARY over the exploited path; verify
+    FLAG{gitlab-vuln:...}. Leak-first, no shipped constants (phpbleed
+    lineage). ASAN (official lineage) reports the shape; offsets must
+    be re-derived on the omnibus jemalloc heap.
     """
-    log("x", "rce mode: TODO - primitive shape not yet characterized "
-             "(ladder 4: ASAN harness). No shipped constants; leak-first "
-             "per phpbleed lineage.")
-    log(">", "current chain state: [crash only]. See lanes/glm/notes.md.")
-
+    log("x", "rce mode: STAGED - awaiting embedded crasher (step 1 "
+             "corpus swap + grooming slots TBD per primitive class).")
+    log(">", f"chain state: crasher hunt = {0} native hits on omnibus "
+             f"(see lanes/glm/notes.md cumulative counter).")
 
 def main():
     p = argparse.ArgumentParser(description="gitlab2shell - CVE-2026-110264 driver")
