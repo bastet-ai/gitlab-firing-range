@@ -368,3 +368,35 @@ ruby (oldest, pre-both-patch-rounds) for the CVE crasher.
   org-ruby shape count sweep 1M members; (c) consider building
   ASAN ruby WITH omnibus configure flags (--with-jemalloc + fortify)
   to match target parse lineage exactly.
+
+## R6 turn results (01:4xZ)
+- ASAN v2b (filtered 70k, no \\k</\\g<): NEW non-F1 ASAN report at
+  i=90537: (?:|{4025604,}){8528894,24} -> heap-use-after-free
+  regparse.c:1210 onig_node_free (official lineage). = F2-N family
+  (empty-branch alternation + literal {..} + broken quantifier,
+  parse-error cleanup UAF, NO backrefs). EMBED rc=0 clean on omnibus
+  (logged probes.log). F2-N is official-lineage-only as well.
+- **ROOT CAUSE OF LINEAGE DIFF (major)**: official ruby:3.3-bookworm
+  docker image vs omnibus ruby build from the IDENTICAL tarball
+  (sha256 b06d63.. matches omnibus manifest EXACTLY) differ in
+  regparse behavior (differential test: embprobe/stdin both sides,
+  F1 crashes official, all omnibus builds reject). => docker-library
+  ruby image = 3.3.12 + BACKPORT PATCHES; omnibus = PRISTINE tarball.
+  F1/F2 ASAN families live in the patched (or post-release) lineage
+  ONLY. Our ASAN harness = official lineage; its reports are shape
+  intelligence but NOT directly reproducible on the gitlab target.
+- 19.4.2's other 3.3.12 omnibus build: same rejections (omnibus
+  lineage consistent).
+- Regexp timeout: field probe clean on embedded (0, -1, 2^31, 2^63,
+  2^64-1, 1e19, -0.0, 2.0**64, Infinity; only ArgumentError on
+  -0.0). Not the shape alone; queued: timeout x IGNORECASE x
+  compiled-size-limit combos (the clause.rb call shape).
+- gitlab2shell.py rce: staged two-step skeleton committed earlier
+  this turn (crash->corrupt w/ jemalloc grooming slots TBD;
+  read->exec leak-first; canary verify).
+- STRATEGIC: real target engine = PRISTINE 3.3.12 + jemalloc. 500k+
+  samples clean. If the CVE overflow exists in this engine, options:
+  (a) match call SHAPES used by the app (timeout:, options combos);
+  (b) build ASAN ruby with EXACT omnibus configure flags (--with-
+  jemalloc, fortify) for target-accurate instrumentation; (c) org-ruby
+  surface shape count-sweep at 1M members plain-only.

@@ -256,3 +256,5 @@ Component                Installed Version                          Version GUID
 [00:25:09] EMBED rc=0 (clean, PROBE_DONE) v3-shape-fuzz 50k seeds777 vs 19.5.0 embedded ruby (cc interiors/codepoints, nesting depth fixed-quant chains, alt-count x casefold, cond numbering, LB distance wraps)
 EMBED rc=0 out_tail=i=0
 PROBE_DONE
+[01:37:46] EMBED rc=0 NEW-SHAPE-1 (?:|{4025604,}){8528894,24} out=i=0
+PROBE_DONE
